@@ -5,11 +5,10 @@
 #include "SearchResult.h"
 #include "Config.h"
 
-// Logger class for writing results to CSV files, both summary and history as .csv
+// class to write the csv files and summary
 class Logger {
 public:
 
-    // resultsDir: folder where all CSV files will be saved, on existing folder
     explicit Logger(const std::string& resultsDir);
 
     void initSummary();

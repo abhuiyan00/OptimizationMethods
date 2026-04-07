@@ -4,27 +4,15 @@
 #include <sstream>
 #include <stdexcept>
 
-// ---------------------------------------------------------------
-// Constructor
-// ---------------------------------------------------------------
 Logger::Logger(const std::string& resultsDir)
     : resultsDir(resultsDir)
 {}
-
-// ---------------------------------------------------------------
-// path — builds a full path from the results directory + filename
-// ---------------------------------------------------------------
+// builds path and files
 std::string Logger::path(const std::string& filename) const
 {
     return resultsDir + "/" + filename;
 }
 
-// ---------------------------------------------------------------
-// initSummary
-//
-// Creates results/summary.csv and writes the CSV header.
-// std::ofstream with default mode truncates (overwrites) any existing file.
-// ---------------------------------------------------------------
 void Logger::initSummary()
 {
     std::ofstream file(path("summary.csv"));
@@ -35,9 +23,7 @@ void Logger::initSummary()
             "\nMake sure the results/ directory exists.");
     }
 
-    // CSV header — each column name separated by commas
-    // These column names match exactly what logRun() writes below,
-    // so they always stay in sync.
+   // csv header
     file << "instance"       << ","
          << "method"         << ","
          << "rep"            << ","
@@ -58,28 +44,20 @@ void Logger::initSummary()
               << path("summary.csv") << "\n";
 }
 
-// ---------------------------------------------------------------
-// logRun
-//
-// Appends one data row to summary.csv.
-// std::ios::app opens the file in APPEND mode — existing rows
-// are preserved and the new row is added at the bottom.
-// ---------------------------------------------------------------
+//appends results in rows
 void Logger::logRun(const std::string&  methodName,
                     const std::string&  instanceName,
                     int                 rep,
                     const SearchResult& result,
                     const Config&       cfg)
 {
-    // Open in append mode — do not overwrite existing rows
     std::ofstream file(path("summary.csv"), std::ios::app);
 
     if (!file.is_open()) {
         std::cerr << "Logger warning: cannot append to summary.csv\n";
-        return;   // non-fatal — print warning but don't crash
+        return;
     }
 
-    // Write one CSV row with fixed-precision floating point values
     file << instanceName                                          << ","
          << methodName                                           << ","
          << rep                                                  << ","
@@ -97,19 +75,12 @@ void Logger::logRun(const std::string&  methodName,
          << "\n";
 }
 
-// ---------------------------------------------------------------
-// logHistory
-//
-// Writes a new CSV file containing the per-generation fitness history
-// for one specific run.  Filename example:
-//   history_GA_tai20_5_0_rep3.csv
-// ---------------------------------------------------------------
+// new files per run
 void Logger::logHistory(const std::string&  methodName,
                         const std::string&  instanceName,
                         int                 rep,
                         const SearchResult& result)
 {
-    // Build filename: history_GA_tai20_5_0_rep0.csv
     std::string filename = "history_" + methodName + "_"
                          + instanceName + "_rep"
                          + std::to_string(rep) + ".csv";
@@ -121,10 +92,9 @@ void Logger::logHistory(const std::string&  methodName,
         return;
     }
 
-    // Header
+    // header
     file << "generation,best,average,worst\n";
-
-    // One row per snapshot in the history vector
+    // one row per generation
     for (int g = 0; g < static_cast<int>(result.history.size()); ++g) {
         const auto& snap = result.history[g];
         file << g                                                    << ","
@@ -133,9 +103,4 @@ void Logger::logHistory(const std::string&  methodName,
              << snap.worst
              << "\n";
     }
-
-    // No explicit close needed — the destructor closes the file when
-    // 'file' goes out of scope at the end of this function.
-    // This is RAII: Resource Acquisition Is Initialisation.
-    // The file is a resource; its lifetime is tied to the object.
 }
