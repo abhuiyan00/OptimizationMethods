@@ -45,10 +45,9 @@ SearchResult GeneticAlgorithm::run()
             Individual parent1 = tournamentSelect(pop);
             Individual parent2 = tournamentSelect(pop);
 
-            const double crossoverProb = 0.8;
-            Individual child = [&]() -> Individual {             // the lambda is to conditionally apply crossover without repeating
-                std::uniform_real_distribution<double> prob(0.0, 1.0); // random double in [0,1)
-                if (prob(rng) < crossoverProb) {
+            Individual child = [&]() -> Individual {
+                std::uniform_real_distribution<double> prob(0.0, 1.0);
+                if (prob(rng) < config.crossoverProbability) {
                     return orderCrossover(parent1, parent2);
                 } else {
                     return parent1;
@@ -56,9 +55,8 @@ SearchResult GeneticAlgorithm::run()
             }();
 
             {
-                const double mutationProb = 0.2;
                 std::uniform_real_distribution<double> prob(0.0, 1.0);
-                if (prob(rng) < mutationProb) {
+                if (prob(rng) < config.mutationProbability) {
                     swapMutate(child);
                 }
             }
