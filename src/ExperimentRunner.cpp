@@ -224,6 +224,33 @@ void ExperimentRunner::runParameterSweep(const std::string& instanceFile,
         sweepGA("tournamentSize", ts);
     }
 
+    // tabuSize - TS parameter
+    auto sweepTS = [&](const std::string& paramName, double paramValue) {
+        std::vector<int> bests;
+        double timeSum = 0.0;
+        for (int rep = 0; rep < cfg.repetitions; ++rep) {
+            std::mt19937 rng(cfg.randomSeed + rep);
+            TabuSearch ts(instance, cfg, rng);
+            SearchResult r = ts.run();
+            bests.push_back(r.bestFitness);
+            timeSum += r.timeMs;
+        }
+        int    best = *std::min_element(bests.begin(), bests.end());
+        double avg  = static_cast<double>(std::accumulate(bests.begin(), bests.end(), 0))
+                      / bests.size();
+        double sd   = stdDev(bests);
+        double avgT = timeSum / bests.size();
+        std::cout << "  " << std::setw(16) << paramName
+                  << " = " << paramValue
+                  << "   best=" << best << "  avg=" << std::fixed
+                  << std::setprecision(1) << avg << "\n";
+        logParamRow(csvPath, paramName, paramValue, instanceName, best, avg, sd, avgT);
+    };
+
+    std::cout << "\n  Sweeping tabuSize (TS):\n";
+    for (int tSize : {3, 5, 7, 10, 15, 20})
+        { cfg = baseline; cfg.tabuSize = tSize; sweepTS("tabuSize", tSize); }
+
     cfg = baseline;
 
     std::cout << "\nParameter sweep complete. Written to " << csvPath << "\n";
