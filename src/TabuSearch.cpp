@@ -19,54 +19,31 @@ SearchResult TabuSearch::run()
 
     const int n = instance.getNumJobs();
 
-    // a. start from greedy solution 
-    GreedySearch greedy(instance);
-    SearchResult greedyResult = greedy.run();
-    
-    //reconstruct an Individual from the greedy result 
+    // start from a random solution
     Individual current(n, rng);
-    current.evaluate(instance);
-
-    {
-        // run again greedy for best fitness
-        GreedySearch g2(instance);
-        SearchResult gr = g2.run();
-        (void)gr;  // suppress "unused variable" warning
-    }
-
-    // start from a random, tabu search will improve it
-    current = Individual(n, rng);
     current.evaluate(instance);
 
     Individual globalBest = current;
 
-    // b. iteration budget calculation, same as GA
     const int neighbourhoodSize = n * (n - 1) / 2;
-    const int totalBudget = config.populationSize * config.generations;
+    const int totalBudget       = config.populationSize * config.generations;
+    const int iterations        = std::max(1, totalBudget / neighbourhoodSize);
 
-    const int iterations = totalBudget / neighbourhoodSize;
-
-    // c. tabu list - starts empty, stores recent moves
     TabuList tabuList;
 
-    // d. main loop
     for (int iter = 0; iter < iterations; ++iter) {
-
         int  bestNeighbourFitness = std::numeric_limits<int>::max();
-        Move bestMove             = {0, 1};   // default, will be overwritten
+        Move bestMove             = {0, 1};
         bool foundAllowedMove     = false;
 
         for (int i = 0; i < n - 1; ++i) {
             for (int j = i + 1; j < n; ++j) {
+                Move move      = {i, j};
+                Individual nb  = applySwap(current, i, j);
+                nb.evaluate(instance);
+                int f          = nb.getFitness();
 
-                Move move = {i, j};
-
-                Individual neighbour = applySwap(current, i, j);
-                neighbour.evaluate(instance);
-
-                int f = neighbour.getFitness();
-
-                bool tabu      = isTabu(tabuList, move);
+                bool tabu       = isTabu(tabuList, move);
                 bool aspiration = (f < globalBest.getFitness());
 
                 if (!tabu || aspiration) {
@@ -80,31 +57,24 @@ SearchResult TabuSearch::run()
         }
 
         if (!foundAllowedMove) {
-            result.addSnapshot(
-                globalBest.getFitness(),
-                static_cast<double>(current.getFitness()),
-                current.getFitness()
-            );
+            result.addSnapshot(globalBest.getFitness(),
+                               static_cast<double>(current.getFitness()),
+                               current.getFitness());
             continue;
         }
 
         current = applySwap(current, bestMove.first, bestMove.second);
         current.evaluate(instance);
-
         addToTabu(tabuList, bestMove);
 
-        if (current.getFitness() < globalBest.getFitness()) {
-            globalBest = current;   // deep copy — Individual's vector is copied
-        }
+        if (current.getFitness() < globalBest.getFitness())
+            globalBest = current;
 
-        result.addSnapshot(
-            globalBest.getFitness(),
-            static_cast<double>(current.getFitness()),
-            current.getFitness()
-        );
+        result.addSnapshot(globalBest.getFitness(),
+                           static_cast<double>(current.getFitness()),
+                           current.getFitness());
     }
 
-    // e. results
     auto endTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> elapsed = endTime - startTime;
 
@@ -113,7 +83,6 @@ SearchResult TabuSearch::run()
     result.avgFitness   = static_cast<double>(globalBest.getFitness());
     result.evaluations  = iterations * neighbourhoodSize;
     result.timeMs       = elapsed.count();
-
     return result;
 }
 
