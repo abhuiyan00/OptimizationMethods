@@ -1,5 +1,9 @@
 """
 PFSP Experiment Plotter
+<<<<<<< HEAD
+=======================
+=======
+>>>>>>> 04c7c8961ec0cc418d10b7512a514e65310e338b
 Run from your project root (where results/ folder is):
     pip install pandas matplotlib
     python generate_plots.py
@@ -26,7 +30,13 @@ COLORS = {
 }
 METHOD_ORDER = ["Greedy", "RandomSearch", "GA", "TS"]
 
+<<<<<<< HEAD
+# ============================================================
 # 1. CONVERGENCE PLOTS (history files) — one per instance
+# ============================================================
+=======
+# 1. CONVERGENCE PLOTS (history files) — one per instance
+>>>>>>> 04c7c8961ec0cc418d10b7512a514e65310e338b
 def plot_convergence():
     instances = ["tai20_5_0", "tai20_10_0", "tai20_20_0",
                  "tai100_10_0", "tai100_20_0", "tai500_20_0"]
@@ -69,7 +79,13 @@ def plot_convergence():
         plt.close(fig)
 
 
+<<<<<<< HEAD
+# ============================================================
 # 2. COMPARISON BAR CHART — best fitness per method per instance
+# ============================================================
+=======
+# 2. COMPARISON BAR CHART — best fitness per method per instance
+>>>>>>> 04c7c8961ec0cc418d10b7512a514e65310e338b
 def plot_comparison_bars():
     summary = pd.read_csv(os.path.join(RESULTS_DIR, "summary.csv"))
 
@@ -123,7 +139,13 @@ def plot_comparison_bars():
         plt.close(fig)
 
 
+<<<<<<< HEAD
+# ============================================================
 # 3. SUMMARY TABLE (printed + saved as CSV)
+# ============================================================
+=======
+# 3. SUMMARY TABLE (printed + saved as CSV)
+>>>>>>> 04c7c8961ec0cc418d10b7512a514e65310e338b
 def make_summary_table():
     summary = pd.read_csv(os.path.join(RESULTS_DIR, "summary.csv"))
 
@@ -143,7 +165,13 @@ def make_summary_table():
     print(table.to_string(index=False))
 
 
+<<<<<<< HEAD
+# ============================================================
 # 4. PARAMETER SWEEP PLOTS
+# ============================================================
+=======
+# 4. PARAMETER SWEEP PLOTS
+>>>>>>> 04c7c8961ec0cc418d10b7512a514e65310e338b
 def plot_param_sweeps():
     param_files = glob.glob(os.path.join(RESULTS_DIR, "params_*.csv"))
 
@@ -173,7 +201,13 @@ def plot_param_sweeps():
             plt.close(fig)
 
 
+<<<<<<< HEAD
+# ============================================================
 # 5. EXECUTION TIME COMPARISON
+# ============================================================
+=======
+# 5. EXECUTION TIME COMPARISON
+>>>>>>> 04c7c8961ec0cc418d10b7512a514e65310e338b
 def plot_time_comparison():
     summary = pd.read_csv(os.path.join(RESULTS_DIR, "summary.csv"))
     agg = summary.groupby(["instance", "method"])["timeMs"].mean().reset_index()
@@ -206,7 +240,13 @@ def plot_time_comparison():
     plt.close(fig)
 
 
+<<<<<<< HEAD
+# ============================================================
 # RUN ALL
+# ============================================================
+=======
+# RUN ALL
+>>>>>>> 04c7c8961ec0cc418d10b7512a514e65310e338b
 if __name__ == "__main__":
     print("=" * 50)
     print("PFSP Experiment Plot Generator")
