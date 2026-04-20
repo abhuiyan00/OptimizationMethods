@@ -7,7 +7,7 @@
 #include "Individual.h"
 #include "SearchResult.h"
 
-// tabu is a single-solution local search metaheuristic
+// Tabu Search over swap moves.
 
 class TabuSearch {
 public:
@@ -23,10 +23,10 @@ private:
     const Config&       config;
     std::mt19937&       rng;
 
-    //  Move is a position swap
+    // Move = swap two positions.
     using Move = std::pair<int, int>;
 
-    // tabu list - deque of recent moves, front = most recent, back = oldest, do not modify base
+    // Recent moves, newest at front.
     using TabuList = std::deque<Move>;
 
     bool isTabu(const TabuList& tabuList, Move move) const;
