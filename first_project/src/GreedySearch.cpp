@@ -15,7 +15,7 @@ SearchResult GreedySearch::run()
     auto startTime = std::chrono::high_resolution_clock::now();
     const int n = instance.getNumJobs();
 
-    // unscheduled pool as 'set' for O(log n), removes a specific job
+    // Keep unscheduled jobs in a set for quick erase.
     std::set<int> unscheduled;
     for (int j = 0; j < n; ++j) {
         unscheduled.insert(j);
@@ -41,11 +41,11 @@ SearchResult GreedySearch::run()
         sequence.push_back(bestJob);
         unscheduled.erase(bestJob);
     }
-    // sqeuence is from existing consttuctor, evaluation
+    // Build and evaluate final permutation.
     Individual solution(sequence);
     solution.evaluate(instance);
     
-    //calculate elapsed time
+    // Measure runtime.
     auto endTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> elapsed = endTime - startTime;
 
@@ -63,12 +63,12 @@ SearchResult GreedySearch::run()
     return result;
 }
 
-// we stop at (len-1)
+// Compute flow time for the first len scheduled jobs.
 int GreedySearch::computePartialFlowTime(const std::vector<int>& sequence, int len) const
 {
     const int m = instance.getNumMachines();
  
-    // C[machine][pos] = completion time table, allocating as many columns we need
+    // Completion-time DP table.
     std::vector<std::vector<int>> C(m, std::vector<int>(len, 0));
 
     for (int machine = 0; machine < m; ++machine) {
@@ -83,7 +83,7 @@ int GreedySearch::computePartialFlowTime(const std::vector<int>& sequence, int l
         }
     }
 
-    // sum the completion times of the last machine
+    // Total flow time is the sum on the last machine row.
     int total = 0;
     for (int pos = 0; pos < len; ++pos) {
         total += C[m - 1][pos];
