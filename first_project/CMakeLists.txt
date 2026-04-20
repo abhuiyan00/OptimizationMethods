@@ -21,4 +21,5 @@ add_executable(pfsp
     src/TabuSearch.cpp
     src/Logger.cpp
     src/ExperimentRunner.cpp
+    src/ILS.cpp
 )
