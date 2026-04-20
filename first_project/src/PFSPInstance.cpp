@@ -1,10 +1,10 @@
 #include "PFSPInstance.h"
-#include <fstream>    // for readin
+#include <fstream>    // File input.
 #include <sstream>    // for parsing
 #include <iostream>   // for printing
 #include <stdexcept>  // for errors
 
-PFSPInstance::PFSPInstance(const std::string & filePath): numJobs(0), numMachines(0) // setting members
+PFSPInstance::PFSPInstance(const std::string & filePath): numJobs(0), numMachines(0) // Initialize counters.
 {
   loadFromFile(filePath);
 }
@@ -22,7 +22,7 @@ void PFSPInstance::loadFromFile(const std::string & filePath) {
 
   std::getline(file, line);
   {
-    std::istringstream ss(line); // treat the line as a stream we can read from
+    std::istringstream ss(line); // Parse problem dimensions and metadata.
     int seed, ub, lb;
     ss >> numJobs >> numMachines >> seed >> ub >> lb;
   }
@@ -67,7 +67,7 @@ void PFSPInstance::print() const {
     std::cout << "  Machine " << m << ": ";
     for (int j = 0; j < numJobs; ++j) {
       std::cout << processingTimes[m][j];
-      if (j < numJobs - 1) std::cout << "\t"; // tab between values
+      if (j < numJobs - 1) std::cout << "\t"; // Separate values with tabs.
     }
     std::cout << "\n";
   }
