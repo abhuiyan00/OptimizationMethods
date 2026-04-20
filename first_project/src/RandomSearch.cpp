@@ -5,26 +5,26 @@
 #include <limits>
 #include <iostream>
 
-// a constructor to store the ref.
+// Keep references to shared inputs.
 RandomSearch::RandomSearch(const PFSPInstance& instance,
                            const Config&       config,
                            std::mt19937&       rng)
     : instance(instance), config(config), rng(rng)
 {}
 
-// run RandomSearch
+// Evaluate random permutations under a fixed evaluation budget.
 SearchResult RandomSearch::run()
 {
-    auto startTime = std::chrono::high_resolution_clock::now(); // clock start
+    auto startTime = std::chrono::high_resolution_clock::now();
 
     SearchResult result;
 
     const int totalEvals = config.populationSize * config.generations;
 
-    // snap of every popSize
+    // Save one snapshot per population-size chunk.
     const int snapshotInterval = config.populationSize;
 
-    // best solution track 
+    // Track global and snapshot-level stats.
     int bestFitness  = std::numeric_limits<int>::max();
     int worstFitness = 0;
     int snapshotBest  = bestFitness;
@@ -34,28 +34,28 @@ SearchResult RandomSearch::run()
 
     for (int eval = 0; eval < totalEvals; ++eval) {
 
-        // generate a random solution
+        // Sample and evaluate one random permutation.
         Individual candidate(instance.getNumJobs(), rng);
         candidate.evaluate(instance);
 
         int f = candidate.getFitness();
 
-        // update global best/worst
+        // Update global best/worst.
         if (f < bestFitness)  bestFitness  = f;
         if (f > worstFitness) worstFitness = f;
 
-        // update snapshot best/worst/sum
+        // Update current snapshot stats.
         if (f < snapshotBest)  snapshotBest  = f;
         if (f > snapshotWorst) snapshotWorst = f;
         snapshotSumFitness += f;
         snapshotCount++;
 
-        // on snapshotInterval, records
+        // Flush snapshot once interval is reached.
         if (snapshotCount == snapshotInterval) {
             double snapshotAvg = snapshotSumFitness / snapshotCount;
             result.addSnapshot(snapshotBest, snapshotAvg, snapshotWorst);
 
-            // resets for next snapshot
+            // Reset snapshot accumulators.
             snapshotBest  = std::numeric_limits<int>::max();
             snapshotWorst = 0;
             snapshotSumFitness = 0.0;
@@ -63,11 +63,11 @@ SearchResult RandomSearch::run()
         }
     }
 
-    // clock stop, calculate elapsed time
+    // Measure runtime.
     auto endTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> elapsed = endTime - startTime;
 
-    // result
+    // Fill final result.
     result.bestFitness  = bestFitness;
     result.worstFitness = worstFitness;
     result.avgFitness   = 0.0;  // not meaningful for random search
