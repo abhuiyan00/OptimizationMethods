@@ -5,7 +5,7 @@
 #include "Config.h"
 #include "Logger.h"
 
-// ExperimentRunner coordinates experiments and parameter sweeps for Taillard instances.
+// Runs benchmark experiments and parameter sweeps.
 
 class ExperimentRunner {
 public:
@@ -16,7 +16,7 @@ public:
 
     void runAll();
 
-    // varies GA parameters one at a time on one instance
+    // Sweep one parameter at a time on a single instance.
     void runParameterSweep(const std::string& instanceFile,
                            const std::string& instanceName);
 
