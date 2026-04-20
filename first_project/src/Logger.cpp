@@ -7,7 +7,7 @@
 Logger::Logger(const std::string& resultsDir)
     : resultsDir(resultsDir)
 {}
-// builds path and files
+// Join results directory with filename.
 std::string Logger::path(const std::string& filename) const
 {
     return resultsDir + "/" + filename;
@@ -23,7 +23,7 @@ void Logger::initSummary()
             "\nMake sure the results/ directory exists.");
     }
 
-   // csv header
+    // CSV header.
     file << "instance"       << ","
          << "method"         << ","
          << "rep"            << ","
@@ -44,7 +44,7 @@ void Logger::initSummary()
               << path("summary.csv") << "\n";
 }
 
-//appends results in rows
+// Append one run to summary.csv.
 void Logger::logRun(const std::string&  methodName,
                     const std::string&  instanceName,
                     int                 rep,
@@ -75,7 +75,7 @@ void Logger::logRun(const std::string&  methodName,
          << "\n";
 }
 
-// new files per run
+// Write convergence history for a single run.
 void Logger::logHistory(const std::string&  methodName,
                         const std::string&  instanceName,
                         int                 rep,
@@ -92,9 +92,9 @@ void Logger::logHistory(const std::string&  methodName,
         return;
     }
 
-    // header
+    // CSV header.
     file << "generation,best,average,worst\n";
-    // one row per generation
+    // One row per saved snapshot.
     for (int g = 0; g < static_cast<int>(result.history.size()); ++g) {
         const auto& snap = result.history[g];
         file << g                                                    << ","
