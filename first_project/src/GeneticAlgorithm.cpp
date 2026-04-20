@@ -11,14 +11,14 @@ GeneticAlgorithm::GeneticAlgorithm(const PFSPInstance& instance,
     : instance(instance), config(config), rng(rng)
 {}
 
-//main GA loop
+// Main GA loop.
 SearchResult GeneticAlgorithm::run()
 {
     auto startTime = std::chrono::high_resolution_clock::now();
 
     SearchResult result;
 
-    // initialize population, evaluate, and sort by fitness
+    // Start from a random evaluated population.
     Population pop(config.populationSize, instance, rng);
     pop.initialize();
 
@@ -31,15 +31,14 @@ SearchResult GeneticAlgorithm::run()
             pop.getWorst().getFitness()
         );
 
-        // next generation container, swap in the end 
+        // Build next generation, then move it into the population.
         std::vector<Individual> nextGen;
         nextGen.reserve(config.populationSize);
 
-        // elitism , pop[0] is best after sort push into nextGen
+        // Elitism: keep the current best.
         nextGen.push_back(pop[0]);
 
-        // fill the rest, select two parents, crossover Px, mutate, evaluate, add to nextGen
-        // else copy parent
+        // Fill the rest with selection, crossover, mutation, evaluation.
         while (static_cast<int>(nextGen.size()) < config.populationSize) {
 
             Individual parent1 = tournamentSelect(pop);
@@ -61,13 +60,13 @@ SearchResult GeneticAlgorithm::run()
                 }
             }
 
-            // evaluate child with no fitness
+            // Fitness is invalid after crossover/mutation.
             child.evaluate(instance);
-            // add to next generation (move vector memory, nonresumable, efficient)
+            // Move into next generation to avoid a copy.
             nextGen.push_back(std::move(child));
         }
 
-        // swap in the new generation (move vector to internal buffer)
+        // Replace population contents.
         pop.getIndividuals() = std::move(nextGen);
     }
 
@@ -85,7 +84,7 @@ SearchResult GeneticAlgorithm::run()
     return result;
 }
 
-//tournament select 
+// Tournament selection.
 Individual GeneticAlgorithm::tournamentSelect(const Population& pop)
 {
     std::uniform_int_distribution<int> dist(0, pop.getSize() - 1);
@@ -102,7 +101,7 @@ Individual GeneticAlgorithm::tournamentSelect(const Population& pop)
     return pop[bestIdx];
 }
 
-//order crossover 
+// Order crossover (OX) for permutations.
 Individual GeneticAlgorithm::orderCrossover(const Individual& parent1,
                                             const Individual& parent2)
 {
@@ -112,7 +111,7 @@ Individual GeneticAlgorithm::orderCrossover(const Individual& parent1,
 
     std::vector<int> childGenes(n, -1);
 
-    // randomly select two cut points
+    // Pick two cut points and copy that segment from parent1.
     std::uniform_int_distribution<int> dist(0, n - 1);
     int cut1 = dist(rng);
     int cut2 = dist(rng);
@@ -125,7 +124,7 @@ Individual GeneticAlgorithm::orderCrossover(const Individual& parent1,
         inChild[p1[i]] = true;
     }
 
-    //fill remaining
+    // Fill remaining slots from parent2 order, skipping duplicates.
 
     int fillPos = (cut2 + 1) % n;
     int scanPos = (cut2 + 1) % n;
@@ -147,7 +146,7 @@ Individual GeneticAlgorithm::orderCrossover(const Individual& parent1,
     return Individual(std::move(childGenes));
 }
 
-// swap mutation, pick two random positions and swap them, in place
+// Swap-mutation on two random positions.
 void GeneticAlgorithm::swapMutate(Individual& ind)
 {
     const int n = ind.getNumJobs();
