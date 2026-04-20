@@ -1,14 +1,11 @@
 """
-PFSP Experiment Plotter
-<<<<<<< HEAD
-=======================
-=======
->>>>>>> 04c7c8961ec0cc418d10b7512a514e65310e338b
-Run from your project root (where results/ folder is):
+PFSP plot generator.
+
+Run from the project root:
     pip install pandas matplotlib
     python generate_plots.py
 
-Generates PNG plots in results/plots/
+Saves PNG files under results/plots/.
 """
 
 import pandas as pd
@@ -16,27 +13,30 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import glob
+import re
 
 RESULTS_DIR = "results"
 PLOTS_DIR = os.path.join(RESULTS_DIR, "plots")
 os.makedirs(PLOTS_DIR, exist_ok=True)
 
-# Consistent colors for methods
+# Fixed color map for method names.
 COLORS = {
     "Greedy": "#888888",
     "RandomSearch": "#e67e22",
     "GA": "#2ecc71",
     "TS": "#3498db",
+    "ILS": "#8e44ad",
 }
-METHOD_ORDER = ["Greedy", "RandomSearch", "GA", "TS"]
+METHOD_ORDER = ["Greedy", "RandomSearch", "GA", "TS", "ILS"]
 
-<<<<<<< HEAD
-# ============================================================
-# 1. CONVERGENCE PLOTS (history files) — one per instance
-# ============================================================
-=======
-# 1. CONVERGENCE PLOTS (history files) — one per instance
->>>>>>> 04c7c8961ec0cc418d10b7512a514e65310e338b
+
+def parse_instance_shape(instance_name):
+    match = re.match(r"tai(\d+)_(\d+)_\d+", instance_name)
+    if not match:
+        return None, None
+    return int(match.group(1)), int(match.group(2))
+
+# 1) Convergence plots from history_*.csv files.
 def plot_convergence():
     instances = ["tai20_5_0", "tai20_10_0", "tai20_20_0",
                  "tai100_10_0", "tai100_20_0", "tai500_20_0"]
@@ -45,7 +45,7 @@ def plot_convergence():
         fig, ax = plt.subplots(figsize=(8, 5))
         has_data = False
 
-        for method in ["GA", "TS", "RandomSearch"]:
+        for method in ["GA", "TS", "RandomSearch", "ILS"]:
             path = os.path.join(RESULTS_DIR, f"history_{method}_{inst}_rep0.csv")
             if not os.path.exists(path):
                 continue
@@ -58,7 +58,7 @@ def plot_convergence():
             ax.plot(df["generation"], df["average"], label=f"{method} avg",
                     color=COLORS.get(method, "black"), linewidth=1, linestyle="--", alpha=0.6)
 
-        # Add greedy as horizontal line
+        # Greedy has one point, so draw it as a horizontal baseline.
         greedy_path = os.path.join(RESULTS_DIR, f"history_Greedy_{inst}_rep0.csv")
         if os.path.exists(greedy_path):
             gdf = pd.read_csv(greedy_path)
@@ -79,20 +79,14 @@ def plot_convergence():
         plt.close(fig)
 
 
-<<<<<<< HEAD
-# ============================================================
-# 2. COMPARISON BAR CHART — best fitness per method per instance
-# ============================================================
-=======
-# 2. COMPARISON BAR CHART — best fitness per method per instance
->>>>>>> 04c7c8961ec0cc418d10b7512a514e65310e338b
+# 2) Method comparison bars (avg best fitness).
 def plot_comparison_bars():
     summary = pd.read_csv(os.path.join(RESULTS_DIR, "summary.csv"))
 
     instances = ["tai20_5_0", "tai20_10_0", "tai20_20_0",
                  "tai100_10_0", "tai100_20_0", "tai500_20_0"]
 
-    # Compute average best fitness per method per instance
+    # Aggregate repeated runs.
     agg = summary.groupby(["instance", "method"]).agg(
         avgBest=("bestFitness", "mean"),
         minBest=("bestFitness", "min"),
@@ -100,7 +94,7 @@ def plot_comparison_bars():
     ).reset_index()
     agg["stdBest"] = agg["stdBest"].fillna(0)
 
-    # --- One chart per difficulty group ---
+    # One chart per instance size group.
     groups = {
         "Easy (20 jobs)": ["tai20_5_0", "tai20_10_0", "tai20_20_0"],
         "Medium (100 jobs)": ["tai100_10_0", "tai100_20_0"],
@@ -139,25 +133,57 @@ def plot_comparison_bars():
         plt.close(fig)
 
 
-<<<<<<< HEAD
-# ============================================================
-# 3. SUMMARY TABLE (printed + saved as CSV)
-# ============================================================
-=======
-# 3. SUMMARY TABLE (printed + saved as CSV)
->>>>>>> 04c7c8961ec0cc418d10b7512a514e65310e338b
+# 3) Summary table (printed and saved).
 def make_summary_table():
     summary = pd.read_csv(os.path.join(RESULTS_DIR, "summary.csv"))
 
-    table = summary.groupby(["instance", "method"]).agg(
-        best=("bestFitness", "min"),
-        avgBest=("bestFitness", "mean"),
-        std=("bestFitness", "std"),
-        avgTime=("timeMs", "mean"),
-        evals=("evaluations", "first"),
-    ).reset_index()
-    table["std"] = table["std"].fillna(0)
-    table = table.round({"avgBest": 1, "std": 1, "avgTime": 1})
+    table = summary.groupby(["instance", "method"], as_index=False).agg(
+        best_found=("bestFitness", "min"),
+        avg_found=("bestFitness", "mean"),
+        worst_found=("bestFitness", "max"),
+        std_dev=("bestFitness", "std"),
+        avg_time_s=("timeMs", lambda s: s.mean() / 1000.0),
+        evals=("evaluations", "mean"),
+    )
+
+    table["std_dev"] = table["std_dev"].fillna(0.0)
+    table["rpd_avg_%"] = ((table["avg_found"] - table["best_found"]) /
+                           table["best_found"] * 100.0)
+    table["stability_cv_%"] = np.where(
+        table["avg_found"] != 0,
+        table["std_dev"] / table["avg_found"] * 100.0,
+        0.0,
+    )
+
+    table[["jobs", "mc"]] = table["instance"].apply(
+        lambda inst: pd.Series(parse_instance_shape(inst))
+    )
+
+    table = table[[
+        "instance",
+        "method",
+        "jobs",
+        "mc",
+        "best_found",
+        "avg_found",
+        "worst_found",
+        "std_dev",
+        "rpd_avg_%",
+        "stability_cv_%",
+        "avg_time_s",
+        "evals",
+    ]]
+
+    table = table.round({
+        "avg_found": 1,
+        "worst_found": 1,
+        "std_dev": 1,
+        "rpd_avg_%": 2,
+        "stability_cv_%": 2,
+        "avg_time_s": 3,
+        "evals": 0,
+    })
+    table["evals"] = table["evals"].astype(int)
 
     out = os.path.join(PLOTS_DIR, "summary_table.csv")
     table.to_csv(out, index=False)
@@ -165,13 +191,7 @@ def make_summary_table():
     print(table.to_string(index=False))
 
 
-<<<<<<< HEAD
-# ============================================================
-# 4. PARAMETER SWEEP PLOTS
-# ============================================================
-=======
-# 4. PARAMETER SWEEP PLOTS
->>>>>>> 04c7c8961ec0cc418d10b7512a514e65310e338b
+# 4) Parameter-sweep sensitivity plots.
 def plot_param_sweeps():
     param_files = glob.glob(os.path.join(RESULTS_DIR, "params_*.csv"))
 
@@ -183,7 +203,7 @@ def plot_param_sweeps():
         for param in params:
             sub = df[df["paramName"] == param].sort_values("paramValue")
             if sub["avgFitness"].nunique() <= 1:
-                # Skip if all identical (old buggy data)
+                # Skip flat curves from stale/invalid data.
                 print(f"  ⚠ Skipping {param} for {inst} (all values identical — re-run after fix)")
                 continue
 
@@ -201,13 +221,7 @@ def plot_param_sweeps():
             plt.close(fig)
 
 
-<<<<<<< HEAD
-# ============================================================
-# 5. EXECUTION TIME COMPARISON
-# ============================================================
-=======
-# 5. EXECUTION TIME COMPARISON
->>>>>>> 04c7c8961ec0cc418d10b7512a514e65310e338b
+# 5) Runtime comparison.
 def plot_time_comparison():
     summary = pd.read_csv(os.path.join(RESULTS_DIR, "summary.csv"))
     agg = summary.groupby(["instance", "method"])["timeMs"].mean().reset_index()
@@ -215,9 +229,9 @@ def plot_time_comparison():
     instances = ["tai20_5_0", "tai20_10_0", "tai20_20_0",
                  "tai100_10_0", "tai100_20_0", "tai500_20_0"]
 
-    fig, ax = plt.subplots(figsize=(10, 5))
+    fig, ax = plt.subplots(figsize=(11, 5))
     x = np.arange(len(instances))
-    width = 0.18
+    width = 0.15
 
     for i, method in enumerate(METHOD_ORDER):
         vals = []
@@ -240,13 +254,7 @@ def plot_time_comparison():
     plt.close(fig)
 
 
-<<<<<<< HEAD
-# ============================================================
-# RUN ALL
-# ============================================================
-=======
-# RUN ALL
->>>>>>> 04c7c8961ec0cc418d10b7512a514e65310e338b
+# Run all plotting steps.
 if __name__ == "__main__":
     print("=" * 50)
     print("PFSP Experiment Plot Generator")
