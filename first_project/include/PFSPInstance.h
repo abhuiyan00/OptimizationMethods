@@ -6,12 +6,14 @@
 class PFSPInstance {
 
 public:
-    explicit PFSPInstance(const std::string& filePath); // explicit means can't accidentally convert a string to PFSPInstance
+    // Load a Taillard instance from file.
+    explicit PFSPInstance(const std::string& filePath);
     
     int getNumJobs() const ;
     int getNumMachines() const ;
     
-    int getProcessingTime(int machine, int job) const ; // returs processing time of jobs on machine
+    // Processing time of job on a machine.
+    int getProcessingTime(int machine, int job) const ;
     
     void print() const; 
 
