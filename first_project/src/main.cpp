@@ -6,6 +6,7 @@
 
 int main(int argc, char* argv[])
 {
+    // Use default experiment settings from Config.
     Config cfg;
     const std::string dataDir    = "data";
     const std::string resultsDir = "results";
@@ -15,6 +16,7 @@ int main(int argc, char* argv[])
 
     ExperimentRunner runner(cfg, dataDir, logger);
 
+    // Run full benchmark and then parameter sweep.
     runner.runAll();
 
     runner.runParameterSweep("data/tai20_5_0.txt", "tai20_5_0");
