@@ -5,11 +5,11 @@
 #include "Config.h"
 #include "SearchResult.h"
 
-// RandomSearch, baseline 
+// Random baseline search.
 
 class RandomSearch {
 public:
-    // runs random search 
+    // Keep references to shared instance/config/RNG.
     RandomSearch(const PFSPInstance& instance,
                  const Config&       config,
                  std::mt19937&       rng);
