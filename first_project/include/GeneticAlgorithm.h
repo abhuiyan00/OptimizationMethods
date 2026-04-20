@@ -6,11 +6,11 @@
 #include "Population.h"
 #include "SearchResult.h"
 
-// GA has Tournament Selection, Order Crossover, Swap Mutation, and Elitism
+// GA with tournament selection, OX crossover, swap mutation, and elitism.
 
 class GeneticAlgorithm {
 public:
-    // running the PSFPInstance returns per-generation information
+    // Runs GA and returns summary plus generation history.
     GeneticAlgorithm(const PFSPInstance& instance,
                      const Config&       config,
                      std::mt19937&       rng);
@@ -21,9 +21,7 @@ private:
     const Config&       config;
     std::mt19937&       rng;    
     
-    // genetic operators
-
-    // tournament selection , ordercrossover with valid permutation, swap two random positions
+    // Genetic operators.
     Individual tournamentSelect(const Population& pop);
     Individual orderCrossover(const Individual& parent1,
                               const Individual& parent2);
