@@ -3,7 +3,7 @@
 #include "PFSPInstance.h"
 #include "SearchResult.h"
 
-// GreedySearch , deterministic, better than random search, but beatable by metaheuristics
+// Deterministic constructive baseline.
 
 class GreedySearch {
 public:
@@ -15,6 +15,6 @@ public:
 private:
     const PFSPInstance& instance;
 
-    // sequence of jobs, and len tells how many jobs, computes total flow of time on last job
+    // Flow time for the first len jobs of a partial sequence.
     int computePartialFlowTime(const std::vector<int>& sequence, int len) const;
 };
