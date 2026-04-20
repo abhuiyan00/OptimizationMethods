@@ -5,7 +5,7 @@
 #include "SearchResult.h"
 #include "Config.h"
 
-// class to write the csv files and summary
+// Writes run summaries and history CSV files.
 class Logger {
 public:
 
