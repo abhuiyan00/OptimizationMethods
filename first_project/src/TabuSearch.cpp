@@ -19,7 +19,7 @@ SearchResult TabuSearch::run()
 
     const int n = instance.getNumJobs();
 
-    // start from a random solution
+    // Start from a random evaluated solution.
     Individual current(n, rng);
     current.evaluate(instance);
 
@@ -96,7 +96,7 @@ bool TabuSearch::isTabu(const TabuList& tabuList, Move move) const
     return false;
 }
 
-// add a move to the front (new entry) and remove from the back if we exceed tabuSize
+// Push newest move; drop oldest if list grows too much.
 void TabuSearch::addToTabu(TabuList& tabuList, Move move)
 {
     tabuList.push_front(move);
@@ -106,8 +106,7 @@ void TabuSearch::addToTabu(TabuList& tabuList, Move move)
     }
 }
 
-// apply swap, new Individual with swapped genes, does not modify base
-// performs the swap on the copy
+// Return a swapped copy without changing the base individual.
 Individual TabuSearch::applySwap(const Individual& base,
                                   int               pos1,
                                   int               pos2) const
