@@ -7,13 +7,13 @@
 
 class Individual {
 public:
-    // constructs a random controlled permutation 
+    // Create a random permutation of jobs.
     Individual(int numJobs, std::mt19937& rng);
 
-    // constructs an individual from existing permutation 
+    // Create from an existing permutation.
     explicit Individual(std::vector<int> genes);
 
-    // total flow of time 
+    // Evaluate total flow time.
     void evaluate(const PFSPInstance& instance);
 
     int              getFitness()          const;
@@ -21,17 +21,16 @@ public:
    
     const std::vector<int>& getGenes()     const;
     
-    // non-const access to genes — used by mutation operators #
-    // neturning by reference allows in-place modification #
+    // Mutable access used by mutation operators.
     std::vector<int>& getMutableGenes();
     
-    // Returns true if this individual is better (lower fitness) 
+    // Lower fitness is better.
     bool operator<(const Individual& other) const;
 
-    // debug helper
+    // Print genes and fitness for debugging.
     void print() const;
 
 private:
-    std::vector<int> genes;    // the job permutation
-    int fitness;               // total flow time — evaluate()
+    std::vector<int> genes;    // Job permutation.
+    int fitness;               // Total flow time.
 };
