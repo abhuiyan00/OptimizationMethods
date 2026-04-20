@@ -5,36 +5,36 @@
 #include "Individual.h"
 #include "PFSPInstance.h"
 
-// fix sized population
+// Fixed-size population container.
 
 class Population {
 public:
 
-    // empty pop
+    // Create an empty population with reserved capacity.
     Population(int size, const PFSPInstance& instance, std::mt19937& rng);
 
-    // initialize with random individuals
+    // Fill with random, evaluated individuals.
     void initialize();
 
-    // returns a const ref to the lowest fitness 
+    // Access best/worst and aggregate fitness.
     const Individual& getBest()  const;
     const Individual& getWorst() const;
     double            getAvgFitness() const;
 
-    // ascending sort
+    // Sort by fitness ascending.
     void sort();
 
-    // returns the number of individuals
+    // Current number of individuals.
     int  getSize() const;
 
-    // access individual by index
+    // Indexed access.
     Individual&       operator[](int index);
     const Individual& operator[](int index) const;
 
-    // returns full vector
+    // Direct access to underlying storage.
     std::vector<Individual>& getIndividuals();
 
-// no copy of instance and rng, 
+    // Stored by reference to avoid heavy copies.
 private:
     int                      size;
     const PFSPInstance&      instance;   
