@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-// a comparable data container
+// Shared result container used by all methods.
 
 struct SearchResult {
 
@@ -20,7 +20,7 @@ struct SearchResult {
     };
     std::vector<GenerationStats> history;
 
-    // snapshot container vector
+    // Append one convergence snapshot.
     void addSnapshot(int best, double avg, int worst) {
         history.push_back({best, avg, worst});
     }
