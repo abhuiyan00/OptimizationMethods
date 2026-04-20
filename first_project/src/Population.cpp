@@ -4,37 +4,36 @@
 #include <numeric>
 #include <stdexcept>
 
-// constructor - store refrences, reserve vector memory
+// Keep shared references and reserve storage.
 Population::Population(int size, const PFSPInstance& instance, std::mt19937& rng)
     : size(size), instance(instance), rng(rng)
 {
     individuals.reserve(size);
 }
 
-// creates random individuals & evaluates
+// Create random individuals and evaluate them.
 void Population::initialize()
 {
-    individuals.clear();   // remove individuals (re-runs)
+    individuals.clear();
 
     for (int i = 0; i < size; ++i) {
-        // separate creation of random individual and copy
         individuals.emplace_back(instance.getNumJobs(), rng);
 
         individuals.back().evaluate(instance);
     }
 }
 
-// getting the best individual (lowest fitness)
+// Best means lowest fitness.
 const Individual& Population::getBest() const
 {
     if (individuals.empty())
         throw std::runtime_error("Population::getBest called on empty population");
 
     auto it = std::min_element(individuals.begin(), individuals.end());
-    return *it; // * dereferences the iterator
+    return *it;
 }
 
-// getting the worst individual (highest fitness)
+// Worst means highest fitness.
 const Individual& Population::getWorst() const
 {
     if (individuals.empty())
@@ -44,7 +43,7 @@ const Individual& Population::getWorst() const
     return *it;
 }
 
-// average fitness of the population
+// Average fitness across the current population.
 double Population::getAvgFitness() const
 {
     if (individuals.empty()) return 0.0;
@@ -54,20 +53,20 @@ double Population::getAvgFitness() const
         individuals.end(),
         0,
         [](int sum, const Individual& ind) {
-            return sum + ind.getFitness();          //lambda
+            return sum + ind.getFitness();
         }
     );
 
     return static_cast<double>(total) / static_cast<double>(individuals.size());
 }
 
-// ascending sort
+// Sort from best to worst.
 void Population::sort()
 {
     std::sort(individuals.begin(), individuals.end());
 }
 
-// access individuals 
+// Access current individuals.
 int Population::getSize() const
 {
     return static_cast<int>(individuals.size());
